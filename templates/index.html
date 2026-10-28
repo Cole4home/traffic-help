@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#07111f">
+    <title>Smart Traffic AI | Traffic Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='simulation.js') }}" defer></script>
+</head>
+<body>
+<header>
+    <p class="eyebrow">SMART CITY · TRAFFIC CONTROL SYSTEM</p>
+    <h1>Smart Traffic AI</h1>
+    <p>Adaptive traffic simulation and intersection monitoring</p>
+    <span class="tag">SIMULATION MODE · NO REAL TRAFFIC CONNECTION</span>
+</header>
+
+<main>
+    <nav class="view-tabs" aria-label="Traffic monitoring views">
+        <button type="button" class="view-tab active" id="trafficTab" data-view="trafficPanel">
+            🚦 Intersection
+        </button>
+        <button type="button" class="view-tab" id="violationsTab" data-view="violationsPanel">
+            ⚠ Violation Monitor <span class="tab-count" id="violationBadge">0</span>
+        </button>
+    </nav>
+
+    <section class="panel tab-content" id="trafficPanel">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">LIVE SIMULATION</p>
+                <h2>Four-way intersection</h2>
+                <p class="small">Vehicles, lanes and signal phases update during the simulation.</p>
+            </div>
+            <span class="live-tag"><span></span> DEMO SYSTEM</span>
+        </div>
+
+        <div class="intersection" id="intersection">
+            <div class="road-arm north">
+                <div class="road-label">NORTH <span>N</span></div>
+                <div class="road-info">
+                    <div class="light" id="light-N" aria-label="North signal">
+                        <span class="red active"></span><span class="yellow"></span><span class="green"></span>
+                    </div>
+                    <div class="road-count"><b id="count-N">0</b><small>waiting</small></div>
+                </div>
+                <div class="cars" id="cars-N"></div>
+            </div>
+
+            <div class="road-arm east">
+                <div class="road-label">EAST <span>E</span></div>
+                <div class="road-info">
+                    <div class="light" id="light-E" aria-label="East signal">
+                        <span class="red active"></span><span class="yellow"></span><span class="green"></span>
+                    </div>
+                    <div class="road-count"><b id="count-E">0</b><small>waiting</small></div>
+                </div>
+                <div class="cars" id="cars-E"></div>
+            </div>
+
+            <div class="road-arm south">
+                <div class="road-label">SOUTH <span>S</span></div>
+                <div class="road-info">
+                    <div class="light" id="light-S" aria-label="South signal">
+                        <span class="red active"></span><span class="yellow"></span><span class="green"></span>
+                    </div>
+                    <div class="road-count"><b id="count-S">0</b><small>waiting</small></div>
+                </div>
+                <div class="cars" id="cars-S"></div>
+            </div>
+
+            <div class="road-arm west">
+                <div class="road-label">WEST <span>W</span></div>
+                <div class="road-info">
+                    <div class="light" id="light-W" aria-label="West signal">
+                        <span class="red active"></span><span class="yellow"></span><span class="green"></span>
+                    </div>
+                    <div class="road-count"><b id="count-W">0</b><small>waiting</small></div>
+                </div>
+                <div class="cars" id="cars-W"></div>
+            </div>
+
+            <div class="junction">
+                <div class="crosswalk crosswalk-top"></div>
+                <div class="crosswalk crosswalk-bottom"></div>
+                <div class="crosswalk crosswalk-left"></div>
+                <div class="crosswalk crosswalk-right"></div>
+                <div class="junction-center">
+                    <span class="junction-icon">✚</span>
+                    <strong id="phase">Starting...</strong>
+                    <p id="timeLeft">Preparing signals</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="violation-alert" id="violationAlert" role="alert" aria-live="assertive" hidden>
+            <strong>⚠ RED-LIGHT VIOLATION</strong>
+            <span id="violationAlertText">A vehicle crossed on red.</span>
+        </div>
+
+        <div class="map-legend">
+            <span><i class="legend-dot green-dot"></i> Green: go</span>
+            <span><i class="legend-dot yellow-dot"></i> Yellow: transition</span>
+            <span><i class="legend-dot red-dot"></i> Red: stop</span>
+            <span><i class="legend-car"></i> Simulated vehicle</span>
+        </div>
+
+        <div class="buttons">
+            <button id="startButton" type="button">▶ Start traffic</button>
+            <button class="secondary" id="pauseButton" type="button">Ⅱ Pause</button>
+            <button class="secondary" id="resetButton" type="button">↻ Reset</button>
+        </div>
+
+        <div class="stats">
+            <div><strong id="totalCars">0</strong><span>Vehicles generated</span></div>
+            <div><strong id="served">0</strong><span>Vehicles served legally</span></div>
+            <div><strong id="averageWait">0 s</strong><span>Average legal wait</span></div>
+            <div class="violation-stat"><strong id="violations">0</strong><span>Red-light violations</span></div>
+        </div>
+
+        <p class="small">
+            Educational simulation using random vehicle arrivals and queue-based signal timing.
+            Red-light running is randomly simulated. This is not a trained machine-learning model
+            and does not control physical traffic lights.
+        </p>
+    </section>
+
+    <section class="panel tab-content" id="violationsPanel" hidden>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">TRAFFIC ENFORCEMENT · DEMO</p>
+                <h2>Violation Monitor</h2>
+                <p class="small">Monitor simulated vehicles that cross while their signal is red.</p>
+            </div>
+            <span class="monitor-status"><span></span> SIMULATED FEED</span>
+        </div>
+
+        <div class="monitor-summary">
+            <div>
+                <span class="summary-label">Total violations</span>
+                <strong id="monitorTotal">0</strong>
+            </div>
+            <div>
+                <span class="summary-label">Latest event</span>
+                <strong class="latest-event" id="latestViolation">No events recorded</strong>
+            </div>
+        </div>
+
+        <div class="monitor-notice">
+            <strong>Demo monitoring only</strong>
+            <p>Entries use fictional simulation vehicle IDs. They are not real licence plates, verified offences, police reports, or evidence for issuing penalties.</p>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event time</th>
+                        <th>Vehicle ID</th>
+                        <th>Approach</th>
+                        <th>Signal</th>
+                        <th>Event</th>
+                    </tr>
+                </thead>
+                <tbody id="violationTable">
+                    <tr><td colspan="5">No violations recorded. Start the simulation to monitor events.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button id="clearViolationsButton" class="secondary" type="button">Clear monitor history</button>
+    </section>
+
+    <section class="panel">
+        <p class="eyebrow">PRIORITY MANAGEMENT</p>
+        <h2>Emergency priority request</h2>
+        <p class="small">Demo only. Do not enter real patient information or real vehicle details.</p>
+
+        <form id="requestForm">
+            <label for="requestType">Request type</label>
+            <select id="requestType" name="requestType">
+                <option value="ambulance">Authorised ambulance (demo)</option>
+                <option value="medical">Private medical emergency</option>
+            </select>
+
+            <div id="credentialBox">
+                <label for="credential">Demo ambulance code</label>
+                <input id="credential" name="credential" value="AMB-DEMO-01" autocomplete="off">
+            </div>
+
+            <label for="plate">Fictional vehicle plate</label>
+            <input id="plate" name="plate" placeholder="SIM-MH12-AB-1234" maxlength="30" required>
+
+            <label for="road">Approach</label>
+            <select id="road" name="road">
+                <option>North</option><option>East</option><option>South</option><option>West</option>
+            </select>
+
+            <label for="hospital">Destination hospital</label>
+            <input id="hospital" name="hospital" placeholder="Demo hospital" maxlength="120" required>
+
+            <label for="reason">Reason for request</label>
+            <textarea id="reason" name="reason" maxlength="300"
+                placeholder="Brief explanation; no real patient details" required></textarea>
+
+            <button type="submit">Send demo request</button>
+        </form>
+        <p id="requestMessage" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+        <p class="eyebrow">OPERATOR CONSOLE</p>
+        <h2>Request review</h2>
+        <p class="small">Pending private medical requests can be reviewed here.</p>
+        <div id="reviewQueue">No requests yet.</div>
+    </section>
+
+    <section class="panel">
+        <p class="eyebrow">EVENT HISTORY</p>
+        <h2>Emergency event records</h2>
+        <p class="small">Server-side demo records. Use fictional information only.</p>
+        <button id="refreshButton" class="secondary" type="button">↻ Refresh records</button>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Time</th><th>Plate</th><th>Type</th><th>Road</th><th>Status</th></tr>
+                </thead>
+                <tbody id="auditTable">
+                    <tr><td colspan="5">Loading records...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="/download/audit">Download audit CSV →</a>
+    </section>
+</main>
+
+<footer>Smart Traffic AI · School project prototype · Simulation only</footer>
+</body>
+</html>
