@@ -1,0 +1,4 @@
+event_id,timestamp,plate,type,road,hospital,reason,status,detail
+EVT-2706BEEC,2026-10-28T17:49:41+05:30,234234234,medical,East,Hospital,Pregnant,pending,Waiting for operator review.
+EVT-2706BEEC-REVIEW,2026-10-28T17:49:54+05:30,234234234,medical,East,Hospital,Pregnant,approved,Operator approved the request.
+EVT-7D3291F3,2026-10-28T20:00:54+05:30,44525235235,medical,North,324566,Pregnant,pending,Waiting for operator review.
